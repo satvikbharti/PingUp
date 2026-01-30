@@ -8,17 +8,19 @@
   "type": "module",
   "scripts": {
     "server": "nodemon server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "postinstall": "echo Skipping postinstall"
   },
   "dependencies": {
-    "@clerk/clerk-sdk-node": "^4.13.23",
+    "@clerk/clerk-sdk-node": "^5.1.6",
     "@clerk/express": "^1.7.65",
+    "@imagekit/nodejs": "^7.2.2",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "imagekit": "^6.0.0",
     "inngest": "^3.49.3",
-    "mailer": "^0.6.7",
+    "mailer": "^0.6.6",
     "mongoose": "^9.1.5",
     "multer": "^2.0.2",
     "node": "^25.5.0",
@@ -28,7 +30,6 @@
     "nodemon": "^3.1.11"
   },
   "engines": {
-  "node": "24.x"
-}
-
+    "node": "24.x"
+  }
 }
