@@ -17,11 +17,20 @@ const App = () => {
   const { user } = useUser()
   const { getToken } = useAuth()
 
-  useEffect(() => {
-    if (user) {
-      getToken().then((token) => console.log(token))
+useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const token = await getToken()
+        console.log("CLERK TOKEN FOR POSTMAN:", token)
+      } catch (err) {
+        console.error("Token error:", err)
+      }
     }
-  }, [user])
+
+    if (user) {
+      fetchToken()
+    }
+  }, [user, getToken])
 
   return (
     <>
