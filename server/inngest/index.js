@@ -2,7 +2,7 @@ import { Inngest } from "inngest";
 import User from "../models/user.js";
 import Connection from "../models/Connection.js";
 import sendEmail from "../configs/nodeMailer.js";
-
+import ensureDB from "./db.js";
 
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "pingup-app" });
@@ -12,6 +12,7 @@ const syncUserCreation = inngest.createFunction(
   { id: "sync-user-from-clerk" },
   { event: "clerk/user.created" },
   async ({ event }) => {
+    await ensureDB();
     const { id, first_name, last_name, email_addresses, image_url } = event.data
 
     let username = email_addresses[0].email_address.split("@")[0]
@@ -38,6 +39,7 @@ const syncUserUpdation = inngest.createFunction(
   { id: "update-user-from-clerk" },
   { event: "clerk/user.updated" },
   async ({ event }) => {
+    await ensureDB();
     const { id, first_name, last_name, email_addresses, image_url } = event.data;
 
     const updatedUserData = {
@@ -55,6 +57,7 @@ const syncUserDeletion = inngest.createFunction(
   { id: "delete-user-from-clerk" },
   { event: "clerk/user.deleted" },
   async ({ event }) => {
+    await ensureDB();
     const { id } = event.data
     await User.findByIdAndDelete(id)
   }
@@ -66,7 +69,7 @@ const sendNewConnectionRequestReminder = inngest.createFunction(
   { event: "app/connection-request" },
   async ({ event, step }) => {
     const { connectionId } = event.data
-
+    await ensureDB();
     await step.run('send-connection-request-mail', async () => {
       const connection = await Connection.findById(connectionId).populate('from_user_id to_user_id')
       const subject = `New Connection Request`
@@ -87,17 +90,17 @@ const sendNewConnectionRequestReminder = inngest.createFunction(
       })
     })
 
-     
+
     const in24Hours = new Date(Date.now() + 24 * 60 * 60 * 1000)
     await step.sleepUntil("wait-for-24-hours", in24Hours)
     await step.run('send-connection-request-reminder', async () => {
       const connection = await Connection.findById(connectionId).populate('from_user_id to_user_id')
 
-      if(connection.status === "accepted"){
-        return {message: "Already accepted"}
+      if (connection.status === "accepted") {
+        return { message: "Already accepted" }
       }
 
-       const subject = `New Connection Request`
+      const subject = `New Connection Request`
       const body = `
       <div style="font-family: Arial , sans-serif; padding: 20px">
       <h2>Hi ${connection.to_user_id.full_name},</h2>
@@ -115,7 +118,7 @@ const sendNewConnectionRequestReminder = inngest.createFunction(
       })
     })
 
-    return {message: "Reminder sent."}
+    return { message: "Reminder sent." }
   }
 )
 
