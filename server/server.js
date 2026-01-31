@@ -11,16 +11,28 @@ import userRouter from './routes/userRoutes.js';
 const app = express()
 
 await connectDB()
+let isConnected = false;
+async function initDB() {
+  if (!isConnected) {
+    await connectDB();
+    isConnected = true;
+  }
+}
+
+app.use(async (req, res, next) => {
+  if (req.path.startsWith("/api/inngest")) {
+    return next(); // Don't touch DB for Inngest
+  }
+  await connectDB();
+  next();
+});
 
 app.use(express.json())
 app.use(cors())
-app.use("/api/user", clerkMiddleware())
+app.get("/", (req, res) => res.send("Server is running"));
 
+app.use("/api/inngest", serve({ client: inngest, functions }));
+app.use("/api/user", clerkMiddleware());
+app.use("/api/user", userRouter);
 
-app.get('/' , (req , res)=> res.send('Server is running'))
-app.use('/api/inngest', serve({ client: inngest, functions }))
-app.use('/api/user', userRouter)
-
-const PORT = process.env.PORT || 4000
-
-app.listen(PORT,()=> console.log(`Server is running on post ${PORT}`))
+export default app;
