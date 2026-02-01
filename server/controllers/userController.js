@@ -1,12 +1,14 @@
 import imageKit from "../configs/imageKit.js"
+import { inngest } from "../inngest/index.js"
 import Connection from "../models/Connection.js"
 import User from "../models/user.js"
 import fs from 'fs'
+import Post from "../models/post.js"
 
 //Get user data using userId
 export const getUserData = async (req, res) => {
     try {
-        const { userId } = await req.auth()
+        const { userId } =  req.auth()
 
         const user = await User.findById(userId)
         if (!user) {
@@ -23,7 +25,7 @@ export const getUserData = async (req, res) => {
 //Update user data 
 export const updateUserData = async (req, res) => {
     try {
-        const { userId } = await req.auth()
+        const { userId } =  req.auth()
 
         let { username, bio, location, full_name } = req.body;
         const tempUser = await User.findById(userId)
@@ -99,7 +101,7 @@ export const updateUserData = async (req, res) => {
 
 export const discoverUsers = async (req, res) => {
     try {
-        const { userId } = await req.auth()
+        const { userId } =  req.auth()
 
         const { input } = req.body
 
@@ -131,7 +133,7 @@ export const discoverUsers = async (req, res) => {
 
 export const followUser = async (req, res) => {
     try {
-        const { userId } = await req.auth()
+        const { userId } =  req.auth()
 
         const { id } = req.body
 
@@ -162,7 +164,7 @@ export const followUser = async (req, res) => {
 
 export const unfollowUser = async (req, res) => {
     try {
-        const { userId } = await req.auth()
+        const { userId } =  req.auth()
 
         const { id } = req.body
 
@@ -189,7 +191,7 @@ export const unfollowUser = async (req, res) => {
 
 export const sendConnectionRequest = async (req, res) => {
     try {
-        const { userId } = await req.auth()
+        const { userId } =  req.auth()
         const { id } = req.body
 
         const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000)
@@ -206,10 +208,16 @@ export const sendConnectionRequest = async (req, res) => {
         })
 
         if (!connection) {
-            await Connection.create({
+            const newConnection = await Connection.create({
                 from_user_id: userId,
                 to_user_id: id
             })
+
+            await inngest.send({
+                name: 'app/connection-request',
+                data: { connectionId: newConnection._id }
+            })
+
             return res.json({ success: true, message: 'Connection reuquest sent successfully' })
         } else if (connection && connection.status === 'accepted') {
             return res.json({ success: false, message: 'You are already connected with this user' })
@@ -227,16 +235,16 @@ export const sendConnectionRequest = async (req, res) => {
 
 export const getUserConnections = async (req, res) => {
     try {
-        const { userId } = await req.auth()
-       const user = await User.findById(userId).populate('connections followers following')
+        const { userId } =  req.auth()
+        const user = await User.findById(userId).populate('connections followers following')
 
-       const connections = user.connections
-       const followers =user.followers
-       const following = user.following
+        const connections = user.connections
+        const followers = user.followers
+        const following = user.following
 
-       const pendingConnections = (await Connection.find({to_user_id: userId, status: 'pending'}).populate('from_user_id')).map(connection=>connection.from_user_id)
+        const pendingConnections = (await Connection.find({ to_user_id: userId, status: 'pending' }).populate('from_user_id')).map(connection => connection.from_user_id)
 
-       res.json({success:true , connections,followers,following,pendingConnections})
+        res.json({ success: true, connections, followers, following, pendingConnections })
 
     } catch (error) {
         console.log(error)
@@ -249,27 +257,27 @@ export const getUserConnections = async (req, res) => {
 
 export const acceptConnectionRequest = async (req, res) => {
     try {
-        const { userId } = await req.auth()
-       const {id} = req.body;
+        const { userId } =  req.auth()
+        const { id } = req.body;
 
-       const connection = await Connection.findOne({from_user_id: id , to_user_id:userId})
+        const connection = await Connection.findOne({ from_user_id: id, to_user_id: userId })
 
-       if(!connection){
-        return res.json({success:false , message: 'Connection not found'})
-       }
+        if (!connection) {
+            return res.json({ success: false, message: 'Connection not found' })
+        }
 
-       const user = await User.findById(userId)
-       user.connections.push(id)
-       await user.save()
+        const user = await User.findById(userId)
+        user.connections.push(id)
+        await user.save()
 
-       const toUser = await User.findById(id)
-       toUser.connections.push(userId)
-       await toUser.save()
+        const toUser = await User.findById(id)
+        toUser.connections.push(userId)
+        await toUser.save()
 
-       connection.status= 'accepted'
-       await connection.save()
+        connection.status = 'accepted'
+        await connection.save()
 
-       res.json({success:true , messsage: 'Connection accepted successfully'})
+        res.json({ success: true, messsage: 'Connection accepted successfully' })
 
     } catch (error) {
         console.log(error)
@@ -277,3 +285,20 @@ export const acceptConnectionRequest = async (req, res) => {
     }
 }
 
+// Get user Profiles
+
+export const getUserProfiles = async (req, res) => {
+    try {
+        const { profileId } = req.body
+        const profile = await User.findById(profileId)
+        if (!profile) {
+            return res.json({ success: false, message: 'Profile not found' })
+        }
+        const posts = await Post.find({ user: profileId }).populate('user')
+
+        res.json({ success: true, profile, posts })
+    } catch (error) {
+        console.log(error)
+        res.json({ success: false, message: error.message })
+    }
+}
