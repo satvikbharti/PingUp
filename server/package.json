@@ -12,13 +12,11 @@
     "postinstall": "echo Skipping postinstall"
   },
   "dependencies": {
-    "@clerk/clerk-sdk-node": "^5.1.6",
-    "@clerk/express": "^1.7.65",
+    "@clerk/express": "^1.7.77",
     "@imagekit/nodejs": "^7.3.0",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^4.22.1",
-    "imagekit": "^6.0.0",
     "inngest": "^3.49.3",
     "mongoose": "^9.1.5",
     "multer": "^2.0.2",
