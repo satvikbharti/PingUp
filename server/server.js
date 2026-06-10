@@ -15,19 +15,7 @@ const app = express();
 await connectDB();
 
 app.use(express.json());
-app.use(
-  cors({
-    origin: [
-      "https://ping-a28ww07va-satviks-projects-f6a94261.vercel.app",
-    ],
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-
-app.options("*", cors());
-
+app.use(cors());
 app.use(clerkMiddleware());
 
 app.get('/', (req, res)=> res.send('Server is running'))
