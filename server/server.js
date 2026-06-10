@@ -15,7 +15,13 @@ const app = express();
 await connectDB();
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true,
+}));
+
+app.options('*', cors());
+
 app.use(clerkMiddleware());
 
 app.get('/', (req, res)=> res.send('Server is running'))
