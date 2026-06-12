@@ -14,16 +14,28 @@ const app = express();
 
 await connectDB();
 
+const allowedOrigins = [
+  'https://pingup-server-6v04nh008-satviks-projects-f6a94261.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:4000'
+];
+
 const corsOptions = {
-  origin: [
-    'https://ping-q5ndt34lj-satviks-projects-f6a94261.vercel.app',
-    'https://pingup-server-6v04nh008-satviks-projects-f6a94261.vercel.app',
-    'http://localhost:5173',
-    'http://localhost:4000'
-  ],
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const sanitizedOrigin = origin.toLowerCase();
+    if (
+      allowedOrigins.includes(sanitizedOrigin) ||
+      sanitizedOrigin.endsWith('.vercel.app')
+    ) {
+      return callback(null, true);
+    }
+    callback(new Error('Not allowed by CORS'));
+  },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
   credentials: true,
+  optionsSuccessStatus: 200,
 };
 
 app.use(express.json());
