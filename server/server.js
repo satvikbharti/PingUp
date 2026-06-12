@@ -14,8 +14,33 @@ const app = express();
 
 await connectDB();
 
+const corsOptions = {
+  origin: [
+    'https://ping-q5ndt34lj-satviks-projects-f6a94261.vercel.app',
+    'https://pingup-server-6v04nh008-satviks-projects-f6a94261.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:4000'
+  ],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
+  credentials: true,
+};
+
 app.use(express.json());
-app.use(cors());
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 app.use(clerkMiddleware());
 
 app.get('/', (req, res)=> res.send('Server is running'))
