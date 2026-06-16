@@ -43,11 +43,11 @@ const StoryViewer = ({viewStory, setViewStory}) => {
         switch (viewStory.media_type) {
             case 'image':
                 return (
-                    <img src={viewStory.media_url} alt="" className='max-w-full max-h-screen object-contain'/>
+                    <img src={viewStory.media_url} alt="" className='max-w-full max-h-[80vh] object-contain rounded-none'/>
                 );
             case 'video':
                 return (
-                    <video onEnded={()=>setViewStory(null)} src={viewStory.media_url} className='max-h-screen' controls autoPlay/>
+                    <video onEnded={()=>setViewStory(null)} src={viewStory.media_url} className='max-h-[80vh] object-contain rounded-none' controls autoPlay/>
                 );
             case 'text':
                 return (
@@ -71,8 +71,8 @@ const StoryViewer = ({viewStory, setViewStory}) => {
         </div>
       </div>
       {/* User Info - Top Left */}
-      <div className='absolute top-4 left-4 flex items-center space-x-3 p-2 px-4 sm:p-4 sm:px-8 backdrop-blur-2xl rounded bg-black/50'>
-        <img src={viewStory.user?.profile_picture} alt="" className='ize-7 sm:size-8 rounded-full object-cover border border-white'/>
+            <div className='absolute top-4 left-4 flex items-center space-x-3 p-2 px-4 sm:p-4 sm:px-8 backdrop-blur-2xl rounded bg-black/50'>
+                <img src={viewStory.user?.profile_picture} alt="" className='w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border border-white'/>
         <div className='text-white font-medium flex items-center gap-1.5'>
             <span>{viewStory.user?.full_name}</span>
             <BadgeCheck size={18}/>
