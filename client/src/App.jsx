@@ -44,7 +44,8 @@ const App = () => {
 
   useEffect(()=>{
     if(user){
-      const eventSource = new EventSource(import.meta.env.VITE_BASEURL + '/api/message/' + user.id);
+      const baseURL = import.meta.env.VITE_BASEURL?.trim() || 'https://pingup-server-6v04nh008-satviks-projects-f6a94261.vercel.app';
+      const eventSource = new EventSource(`${baseURL}/api/message/${user.id}`);
 
       eventSource.onmessage = (event)=>{
         const message = JSON.parse(event.data)
@@ -57,6 +58,12 @@ const App = () => {
           ), {position: "bottom-right"})
         }
       }
+
+      eventSource.onerror = (err) => {
+        console.error('SSE connection error:', err);
+        eventSource.close();
+      }
+
       return ()=>{
         eventSource.close()
       }
