@@ -17,4 +17,15 @@ userRouter.get('/connections', protect, getUserConnections)
 userRouter.post('/profiles', getUserProfiles)
 userRouter.get('/recent-messages', protect, getUserRecentMessages)
 
+// Debug route: echoes request origin/headers (no auth)
+userRouter.get('/debug', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.json({
+    ok: true,
+    origin: req.headers.origin || null,
+    host: req.headers.host || null,
+    headers: req.headers
+  });
+});
+
 export default userRouter

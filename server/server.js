@@ -14,24 +14,9 @@ const app = express();
 
 await connectDB();
 
-const allowedOrigins = [
-  'https://pingup-server-6v04nh008-satviks-projects-f6a94261.vercel.app',
-  'http://localhost:5173',
-  'http://localhost:4000'
-];
-
 const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    const sanitizedOrigin = origin.toLowerCase();
-    if (
-      allowedOrigins.includes(sanitizedOrigin) ||
-      sanitizedOrigin.endsWith('.vercel.app')
-    ) {
-      return callback(null, true);
-    }
-    callback(new Error('Not allowed by CORS'));
-  },
+  // reflect the request origin (allows browser requests from any origin)
+  origin: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
   credentials: true,
@@ -40,10 +25,12 @@ const corsOptions = {
 
 app.use(express.json());
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+app.options('*', cors());
 
+// ensure OPTIONS and other requests always have CORS headers (safe fallback)
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  const origin = req.headers.origin || '*';
+  res.header('Access-Control-Allow-Origin', origin);
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   res.header('Access-Control-Allow-Credentials', 'true');
